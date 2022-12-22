@@ -14,28 +14,10 @@ type config struct {
 	filters  filters.Args
 }
 
-type Option func(o *config) error
-
-func Interval(t time.Duration) Option {
-	return func(o *config) error {
-		o.interval = t
-		return nil
-	}
-}
-
-func MaxAge(t time.Duration) Option {
-	return func(o *config) error {
-		o.maxAge = t
-		return nil
-	}
-}
-
-func Filter(key, value string) Option {
-	return func(o *config) error {
-		o.filters.Add(key, value)
-		return nil
-	}
-}
+var (
+	DefaultInterval = 30 * time.Minute
+	DefaultMaxAge   = 24 * time.Hour
+)
 
 // Starts a new garbage collector with the specified interval check, and removes containers older than specified age.
 func Start(ctx context.Context, options ...Option) error {
@@ -44,7 +26,10 @@ func Start(ctx context.Context, options ...Option) error {
 		return err
 	}
 
-	cnf := &config{}
+	cnf := &config{
+		interval: DefaultInterval,
+		maxAge:   DefaultMaxAge,
+	}
 	for _, opt := range options {
 		if err := opt(cnf); err != nil {
 			return err

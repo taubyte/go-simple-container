@@ -90,7 +90,7 @@ logs.Close()
     ```
     - Using a file:
     ```go 
-    tarball, err := os.OpenFile("<path_to>/<docker_tarball_name.tar>",os.O_RDWR,0444)
+    tarball, err := os.Open("<path_to>/<docker_tarball_name.tar>")
     if err != nil{
         return err
     }
