@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/filters"
-	ci "github.com/taubyte/go-simple-containers"
+	ci "github.com/taubyte/go-simple-container"
 )
 
 type config struct {

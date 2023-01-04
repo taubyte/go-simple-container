@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	containers "github.com/taubyte/go-simple-containers"
+	containers "github.com/taubyte/go-simple-container"
 )
 
 var container *containers.Container
