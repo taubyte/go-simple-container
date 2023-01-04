@@ -1,12 +1,12 @@
-# taubyte/go-simple-containers 
+# taubyte/go-simple-container 
 An abstraction layer over the docker api client. Goal: make it simple to use containers from go.
 
 ## Installation 
-The import path for the package is *github.com/taubyte/go-simple-containers*.
+The import path for the package is *github.com/taubyte/go-simple-container*.
 
 To install it, run:
 ```bash 
-go get github.com/taubyte/go-simple-containers
+go get github.com/taubyte/go-simple-container
 ```
 
 
@@ -15,7 +15,7 @@ go get github.com/taubyte/go-simple-containers
 ### Basic Example
 ```go
 import (
-    ci "github.com/taubyte/go-simple-containers"
+    ci "github.com/taubyte/go-simple-container"
     "context"
 )
 
@@ -110,8 +110,8 @@ client.Image(context.Background(),"taubyte/testrepo:version1",imageOption)
 ### Creating a Garbage Collector
 ```go
 import ( 
-    "github.com/taubyte/go-simple-containers/gc"
-    ci "github.com/taubyte/go-simple-containers" 
+    "github.com/taubyte/go-simple-container/gc"
+    ci "github.com/taubyte/go-simple-container" 
 )
 
 // Create new docker client 

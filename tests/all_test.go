@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
-	ci "github.com/taubyte/go-simple-containers"
-	"github.com/taubyte/go-simple-containers/gc"
+	ci "github.com/taubyte/go-simple-container"
+	"github.com/taubyte/go-simple-container/gc"
 )
 
 func TestContainerBasicCommand(t *testing.T) {

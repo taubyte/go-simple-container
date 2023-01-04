@@ -1,4 +1,4 @@
-module github.com/taubyte/go-simple-containers
+module github.com/taubyte/go-simple-container
 
 go 1.18
 
