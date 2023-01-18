@@ -81,6 +81,10 @@ func TestContainerCleanUpInterval(t *testing.T) {
 	}
 
 	err = gc.Start(ctx, gc.Interval(20*time.Second), gc.MaxAge(10*time.Second))
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	file, err := os.OpenFile(DockerTarBallPath, os.O_RDWR, 0444)
 	if err != nil {

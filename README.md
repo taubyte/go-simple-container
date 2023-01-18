@@ -1,4 +1,8 @@
 # taubyte/go-simple-container 
+
+[![GoDoc](https://godoc.org/github.com/taubyte/go-sdk?status.svg)](https://pkg.go.dev/github.com/taubyte/go-sdk)
+[![Go Report Card](https://goreportcard.com/badge/taubyte/go-sdk)](https://goreportcard.com/report/taubyte/go-sdk)
+
 An abstraction layer over the docker api client. Goal: make it simple to use containers from go.
 
 ## Installation 
@@ -10,7 +14,7 @@ go get github.com/taubyte/go-simple-container
 ```
 
 
-# Usage
+## Usage
 
 ### Basic Example
 ```go
@@ -140,19 +144,15 @@ Then run
 $ go test -v
 ```
 
-# Help
+## Help
 Find us on our [Discord](https://discord.gg/eKfazxFDf9)
 
-# API documentation
-[https://pkg.go.dev/github.com/taubyte/go-simple-git](https://pkg.go.dev/github.com/taubyte/go-simple-git)
-
-# License 
+## License 
 The package is licensed under the GPL v3 licenses.
-Please see the LICENSE file for details.
 
-# Maintainers
+See [LICENSE](LICENSE) for the full license text.
+
+## Maintainers
 - Samy Fodil @samyfodil
 - Tafseer Khan @tafseer-khan
-
-
-
+- Samuel Stoltenberg @skelouse
