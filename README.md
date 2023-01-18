@@ -1,7 +1,7 @@
 # taubyte/go-simple-container 
 
-[![GoDoc](https://godoc.org/github.com/taubyte/go-sdk?status.svg)](https://pkg.go.dev/github.com/taubyte/go-sdk)
-[![Go Report Card](https://goreportcard.com/badge/taubyte/go-sdk)](https://goreportcard.com/report/taubyte/go-sdk)
+[![GoDoc](https://godoc.org/github.com/taubyte/go-simple-container?status.svg)](https://pkg.go.dev/github.com/taubyte/go-simple-container)
+[![Go Report Card](https://goreportcard.com/badge/taubyte/go-simple-container)](https://goreportcard.com/report/taubyte/go-simple-container)
 
 An abstraction layer over the docker api client. Goal: make it simple to use containers from go.
 
