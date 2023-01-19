@@ -1,7 +1,10 @@
 # taubyte/go-simple-container 
 
-[![GoDoc](https://godoc.org/github.com/taubyte/go-simple-container?status.svg)](https://pkg.go.dev/github.com/taubyte/go-simple-container)
+[![Release](https://img.shields.io/github/release/taubyte/go-simple-container.svg)](https://github.com/taubyte/go-simple-container/releases)
+[![License](https://img.shields.io/github/license/taubyte/go-simple-container)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/taubyte/go-simple-container)](https://goreportcard.com/report/taubyte/go-simple-container)
+[![GoDoc](https://godoc.org/github.com/taubyte/go-simple-container?status.svg)](https://pkg.go.dev/github.com/taubyte/go-simple-container)
+[![Discord](https://img.shields.io/discord/973677117722202152?color=%235865f2&label=discord)](https://tau.link/discord)
 
 An abstraction layer over the docker api client. Goal: make it simple to use containers from go.
 
@@ -143,14 +146,6 @@ Then run
 ```bash
 $ go test -v
 ```
-
-## Help
-Find us on our [Discord](https://discord.gg/eKfazxFDf9)
-
-## License 
-The package is licensed under the GPL v3 licenses.
-
-See [LICENSE](LICENSE) for the full license text.
 
 ## Maintainers
 - Samy Fodil @samyfodil
