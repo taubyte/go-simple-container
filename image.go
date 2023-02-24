@@ -17,8 +17,8 @@ import (
 
 // Image initializes the given image, and attempts to pull the container from docker hub.
 // If the Build() Option is provided then the given DockerFile tarball is built and returned.
-func (c *Client) Image(ctx context.Context, image string, options ...ImageOption) (_image *Image, err error) {
-	_image = &Image{
+func (c *Client) Image(ctx context.Context, image string, options ...ImageOption) (*Image, error) {
+	_image := &Image{
 		client: c,
 		image:  image,
 	}
@@ -30,9 +30,10 @@ func (c *Client) Image(ctx context.Context, image string, options ...ImageOption
 		}
 	}
 
+	imageExists := _image.checkImageExists(ctx)
 	if _image.buildTarball != nil {
-		if ForceRebuild == true || _image.checkImage(ctx) != nil {
-			err = _image.buildImage(ctx)
+		if ForceRebuild == true || !imageExists {
+			err := _image.buildImage(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("building image `%s` failed with %s", image, err)
 			}
@@ -41,28 +42,24 @@ func (c *Client) Image(ctx context.Context, image string, options ...ImageOption
 		return _image, nil
 	}
 
-	_image, err = _image.Pull(ctx)
-	if err != nil {
+	_image, err := _image.Pull(ctx)
+	if err != nil && !imageExists {
 		return nil, fmt.Errorf("pulling image `%s` failed with %s", image, err)
 	}
 
-	return _image, err
+	return _image, nil
 }
 
 // checkImage checks the docker host client if the image is known.
-func (i *Image) checkImage(ctx context.Context) error {
+func (i *Image) checkImageExists(ctx context.Context) bool {
 	res, err := i.client.ImageList(ctx, types.ImageListOptions{
 		Filters: NewFilter("reference", i.image),
 	})
-	if err != nil {
-		return fmt.Errorf("listing docker host images  with reference `%s` failed with %s", i.image, err)
+	if err != nil || len(res) < 1 {
+		return false
 	}
 
-	if len(res) < 1 {
-		return fmt.Errorf("image `%s` not located in docker host", i.image)
-	}
-
-	return nil
+	return true
 }
 
 // buildImage builds a DockerFile tarball as a docker image.
@@ -93,7 +90,7 @@ func (i *Image) buildImage(ctx context.Context) error {
 func (i *Image) Pull(ctx context.Context) (*Image, error) {
 	reader, err := i.client.ImagePull(ctx, i.image, types.ImagePullOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("pulling image `%s`, failed with %s", i.image, err)
+		return i, fmt.Errorf("pulling image `%s`, failed with %s", i.image, err)
 	}
 
 	defer reader.Close()
@@ -113,7 +110,7 @@ func (i *Image) Pull(ctx context.Context) (*Image, error) {
 		}
 		err = json.Unmarshal(line, &status)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshaling status from docker pull on image `%s` failed with: %s", i.image, err)
+			return i, fmt.Errorf("unmarshaling status from docker pull on image `%s` failed with: %s", i.image, err)
 		}
 	}
 
