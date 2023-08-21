@@ -32,7 +32,7 @@ func (c *Client) Image(ctx context.Context, image string, options ...ImageOption
 
 	imageExists := _image.checkImageExists(ctx)
 	if _image.buildTarball != nil {
-		if ForceRebuild == true || !imageExists {
+		if ForceRebuild || !imageExists {
 			err := _image.buildImage(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("building image `%s` failed with %s", image, err)

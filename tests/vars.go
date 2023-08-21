@@ -17,16 +17,15 @@ const (
 
 // Test Variables
 var (
-	message            = "testing message"
-	basicCommand       = []string{"echo", message}
-	testScriptCommand  = []string{"/bin/sh", "/src/" + TestScript}
-	TestScriptMessage  = "HELLO WORLD"
-	testVarsCommand    = []string{"/bin/sh", "/src/" + TestVarScript, "$" + testEnv}
-	testEnv            = "TEST"
-	testVal            = "Value42"
-	testCustomImage    = "taubyte/test:test2"
-	testDockerHubImage = "node"
-	testVolume         = "volume"
+	message           = "testing message"
+	basicCommand      = []string{"echo", message}
+	testScriptCommand = []string{"/bin/sh", "/src/" + TestScript}
+	TestScriptMessage = "HELLO WORLD"
+	testVarsCommand   = []string{"/bin/sh", "/src/" + TestVarScript, "$" + testEnv}
+	testEnv           = "TEST"
+	testVal           = "Value42"
+	testCustomImage   = "taubyte/test:test2"
+	testVolume        = "volume"
 )
 
 var (
