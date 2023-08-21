@@ -61,11 +61,32 @@ func errorContainerCreate(image string, err error) error {
 
 // Container Method Errors
 var (
-	errorContainerStart   = errors.New("start container failed")
-	errorContainerWait    = errors.New("container wait failed")
-	errorClientWait       = errors.New("client wait failed")
-	errorContainerInspect = errors.New("inspecting container failed")
-	errorExitCode         = errors.New("exit-code")
+	ErrorContainerStart   = errors.New("start container failed")
+	ErrorContainerWait    = errors.New("container wait failed")
+	ErrorClientWait       = errors.New("client wait failed")
+	ErrorContainerInspect = errors.New("inspecting container failed")
+	ErrorExitCode         = errors.New("exit-code")
+	ErrorContainerLogs    = errors.New("getting container logs failed")
 
-	errorContainerFormat = "containerId: `%s` image: `%s` with: %w"
+	errorContainerFormat = "%s for container Id:`%s` image:`%s` with: %w"
 )
+
+func errorContainerStart(id, image string, err error) error {
+	return fmt.Errorf(errorContainerFormat, ErrorContainerStart, id, image, err)
+}
+
+func errorContainerWait(id, image string, err error) error {
+	return fmt.Errorf(errorContainerFormat, ErrorContainerWait, id, image, err)
+}
+
+func errorContainerInspect(id, image string, err error) error {
+	return fmt.Errorf(errorContainerFormat, ErrorContainerInspect, id, image, err)
+}
+
+func errorContainerExitCode(id, image string, code int) error {
+	return fmt.Errorf("container Id:`%s` image:`%s` failed with %w:%d", id, image, ErrorExitCode, code)
+}
+
+func errorContainerLogs(id, image string, err error) error {
+	return fmt.Errorf(errorContainerFormat, ErrorContainerLogs, id, image, err)
+}
