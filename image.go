@@ -17,37 +17,30 @@ import (
 
 // Image initializes the given image, and attempts to pull the container from docker hub.
 // If the Build() Option is provided then the given DockerFile tarball is built and returned.
-func (c *Client) Image(ctx context.Context, image string, options ...ImageOption) (*Image, error) {
-	_image := &Image{
+func (c *Client) Image(ctx context.Context, name string, options ...ImageOption) (image *Image, err error) {
+	image = &Image{
 		client: c,
-		image:  image,
+		image:  name,
 	}
 
 	for _, opt := range options {
-		err := opt(_image)
-		if err != nil {
-			return nil, fmt.Errorf("running image options for image `%s` failed with: %s", image, err)
+		if err := opt(image); err != nil {
+			return nil, errorImageOptions(name, err)
 		}
 	}
 
-	imageExists := _image.checkImageExists(ctx)
-	if _image.buildTarball != nil {
-		if ForceRebuild || !imageExists {
-			err := _image.buildImage(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("building image `%s` failed with %s", image, err)
-			}
+	imageExists := image.checkImageExists(ctx)
+	if image.buildTarball != nil && (ForceRebuild || !imageExists) {
+		if err := image.buildImage(ctx); err != nil {
+			return nil, errorImageBuild(name, err)
 		}
-
-		return _image, nil
+	} else {
+		if image, err = image.Pull(ctx); err != nil {
+			return nil, errorImagePull(name, err)
+		}
 	}
 
-	_image, err := _image.Pull(ctx)
-	if err != nil && !imageExists {
-		return nil, fmt.Errorf("pulling image `%s` failed with %s", image, err)
-	}
-
-	return _image, nil
+	return
 }
 
 // checkImage checks the docker host client if the image is known.
@@ -55,11 +48,8 @@ func (i *Image) checkImageExists(ctx context.Context) bool {
 	res, err := i.client.ImageList(ctx, types.ImageListOptions{
 		Filters: NewFilter("reference", i.image),
 	})
-	if err != nil || len(res) < 1 {
-		return false
-	}
 
-	return true
+	return err == nil && len(res) > 0
 }
 
 // buildImage builds a DockerFile tarball as a docker image.
@@ -71,16 +61,16 @@ func (i *Image) buildImage(ctx context.Context) error {
 			Context:    i.buildTarball,
 			Dockerfile: "Dockerfile",
 			Tags:       []string{i.image},
-			Remove:     true})
+			Remove:     true,
+		},
+	)
 	if err != nil {
-		return fmt.Errorf("building Dockerfile for image `%s` failed with: %s", i.image, err)
+		return errorImageBuildDockerFile(err)
 	}
-
 	defer imageBuildResponse.Body.Close()
 
-	_, err = io.Copy(os.Stdout, imageBuildResponse.Body)
-	if err != nil {
-		return fmt.Errorf("copying response from  image `%s` build failed with :%s", i.image, err)
+	if _, err = io.Copy(os.Stdout, imageBuildResponse.Body); err != nil {
+		return errorImageBuildResCopy(err)
 	}
 
 	return nil
@@ -90,14 +80,12 @@ func (i *Image) buildImage(ctx context.Context) error {
 func (i *Image) Pull(ctx context.Context) (*Image, error) {
 	reader, err := i.client.ImagePull(ctx, i.image, types.ImagePullOptions{})
 	if err != nil {
-		return i, fmt.Errorf("pulling image `%s`, failed with %s", i.image, err)
+		return i, errorClientPull(err)
 	}
-
 	defer reader.Close()
+
 	fileScanner := bufio.NewScanner(reader)
-
 	fileScanner.Split(bufio.ScanLines)
-
 	for fileScanner.Scan() {
 		var line = fileScanner.Bytes()
 		var status struct {
@@ -108,9 +96,9 @@ func (i *Image) Pull(ctx context.Context) (*Image, error) {
 			}
 			Id string
 		}
-		err = json.Unmarshal(line, &status)
-		if err != nil {
-			return i, fmt.Errorf("unmarshaling status from docker pull on image `%s` failed with: %s", i.image, err)
+
+		if err = json.Unmarshal(line, &status); err != nil {
+			return i, errorImagePullStatus(err)
 		}
 	}
 
@@ -125,18 +113,17 @@ func (i *Image) Instantiate(ctx context.Context, options ...ContainerOption) (*C
 	for _, opt := range options {
 		err := opt(c)
 		if err != nil {
-			return nil, fmt.Errorf("running image options for image `%s` failed with: %s", i.image, err)
+			return nil, errorContainerOptions(i.image, err)
 		}
 	}
 
-	var mounts []mount.Mount
-	_volume := mount.Mount{
-		Type: mount.TypeBind,
-	}
-	for _, volume := range c.volumes {
-		_volume.Source = volume.source
-		_volume.Target = volume.target
-		mounts = append(mounts, _volume)
+	mounts := make([]mount.Mount, len(c.volumes))
+	for idx, volume := range c.volumes {
+		mounts[idx] = mount.Mount{
+			Type:   mount.TypeBind,
+			Source: volume.source,
+			Target: volume.target,
+		}
 	}
 
 	config := &container.Config{
@@ -146,14 +133,13 @@ func (i *Image) Instantiate(ctx context.Context, options ...ContainerOption) (*C
 		Tty:   false,
 		Env:   c.env,
 	}
-
-	if len(c.workDir) != 0 {
+	if len(c.workDir) > 0 {
 		config.WorkingDir = c.workDir
 	}
 
 	resp, err := c.image.client.ContainerCreate(ctx, config, &container.HostConfig{Mounts: mounts}, nil, nil, "")
 	if err != nil {
-		return nil, fmt.Errorf("creating container for image `%s` failed with: %s", c.image.image, err)
+		return nil, errorContainerCreate(c.image.Name(), err)
 	}
 	c.id = resp.ID
 
@@ -162,21 +148,26 @@ func (i *Image) Instantiate(ctx context.Context, options ...ContainerOption) (*C
 
 // Clean removes all docker images that match the given filter, and max age.
 func (c *Client) Clean(ctx context.Context, age time.Duration, filter filters.Args) error {
-	images, _ := c.ImageList(context.Background(), types.ImageListOptions{Filters: filter})
+	images, _ := c.ImageList(ctx, types.ImageListOptions{Filters: filter})
 	timeNow := time.Now()
+
+	var err error
 	for _, image := range images {
 		if time.Unix(image.Created, 0).Add(age).Before(timeNow) {
-			_, err := c.ImageRemove(ctx, image.ID, types.ImageRemoveOptions{
+			if _, _err := c.ImageRemove(ctx, image.ID, types.ImageRemoveOptions{
 				Force:         true,
 				PruneChildren: true,
-			})
-			if err != nil {
-				return fmt.Errorf("cleaning image `%s` from docker host failed with %s", image.ID, err)
+			}); _err != nil {
+				if err != nil {
+					err = fmt.Errorf("%s:%w", err, _err)
+				} else {
+					err = _err
+				}
 			}
 		}
 	}
 
-	return nil
+	return err
 }
 
 // Name returns the name of the image
