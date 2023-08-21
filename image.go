@@ -45,7 +45,7 @@ func (c *Client) Image(ctx context.Context, name string, options ...ImageOption)
 
 // checkImage checks the docker host client if the image is known.
 func (i *Image) checkImageExists(ctx context.Context) bool {
-	res, err := i.client.ImageList(ctx, types.ImageListOptions{
+	res, err := i.client.Docker.ImageList(ctx, types.ImageListOptions{
 		Filters: NewFilter("reference", i.image),
 	})
 
@@ -54,7 +54,7 @@ func (i *Image) checkImageExists(ctx context.Context) bool {
 
 // buildImage builds a DockerFile tarball as a docker image.
 func (i *Image) buildImage(ctx context.Context) error {
-	imageBuildResponse, err := i.client.ImageBuild(
+	imageBuildResponse, err := i.client.Docker.ImageBuild(
 		ctx,
 		i.buildTarball,
 		types.ImageBuildOptions{
@@ -78,7 +78,7 @@ func (i *Image) buildImage(ctx context.Context) error {
 
 // Pull retrieves latest changes to the image from docker hub.
 func (i *Image) Pull(ctx context.Context) (*Image, error) {
-	reader, err := i.client.ImagePull(ctx, i.image, types.ImagePullOptions{})
+	reader, err := i.client.Docker.ImagePull(ctx, i.image, types.ImagePullOptions{})
 	if err != nil {
 		return i, errorClientPull(err)
 	}
@@ -137,7 +137,7 @@ func (i *Image) Instantiate(ctx context.Context, options ...ContainerOption) (*C
 		config.WorkingDir = c.workDir
 	}
 
-	resp, err := c.image.client.ContainerCreate(ctx, config, &container.HostConfig{Mounts: mounts}, nil, nil, "")
+	resp, err := c.image.client.Docker.ContainerCreate(ctx, config, &container.HostConfig{Mounts: mounts}, nil, nil, "")
 	if err != nil {
 		return nil, errorContainerCreate(c.image.Name(), err)
 	}
@@ -148,13 +148,13 @@ func (i *Image) Instantiate(ctx context.Context, options ...ContainerOption) (*C
 
 // Clean removes all docker images that match the given filter, and max age.
 func (c *Client) Clean(ctx context.Context, age time.Duration, filter filters.Args) error {
-	images, _ := c.ImageList(ctx, types.ImageListOptions{Filters: filter})
+	images, _ := c.Docker.ImageList(ctx, types.ImageListOptions{Filters: filter})
 	timeNow := time.Now()
 
 	var err error
 	for _, image := range images {
 		if time.Unix(image.Created, 0).Add(age).Before(timeNow) {
-			if _, _err := c.ImageRemove(ctx, image.ID, types.ImageRemoveOptions{
+			if _, _err := c.Docker.ImageRemove(ctx, image.ID, types.ImageRemoveOptions{
 				Force:         true,
 				PruneChildren: true,
 			}); _err != nil {

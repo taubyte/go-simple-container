@@ -125,7 +125,7 @@ func TestContainerCleanUpInterval(t *testing.T) {
 		return
 	}
 
-	images, err := cli.ImageList(ctx, types.ImageListOptions{
+	images, err := cli.Docker.ImageList(ctx, types.ImageListOptions{
 		Filters: ci.NewFilter("reference", testCustomImage),
 	})
 	if err != nil {
@@ -140,7 +140,7 @@ func TestContainerCleanUpInterval(t *testing.T) {
 
 	time.Sleep(20 * time.Second)
 
-	images, err = cli.ImageList(ctx, types.ImageListOptions{
+	images, err = cli.Docker.ImageList(ctx, types.ImageListOptions{
 		Filters: ci.NewFilter("reference", testCustomImage),
 	})
 	if err != nil {
