@@ -36,7 +36,12 @@ func (c *Client) Image(ctx context.Context, name string, options ...ImageOption)
 		}
 	} else {
 		if image, err = image.Pull(ctx); err != nil {
-			return nil, errorImagePull(name, err)
+			err = errorImagePull(name, err)
+			if !imageExists {
+				image = nil
+			}
+
+			return image, err
 		}
 	}
 
