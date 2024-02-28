@@ -146,8 +146,3 @@ Then run
 ```bash
 $ go test -v
 ```
-
-## Maintainers
-- Samy Fodil @samyfodil
-- Tafseer Khan @tafseer-khan
-- Samuel Stoltenberg @skelouse

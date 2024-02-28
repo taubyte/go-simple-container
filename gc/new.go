@@ -37,7 +37,7 @@ func Start(ctx context.Context, options ...Option) error {
 	}
 
 	go func() {
-		defer client.Docker.Close()
+		defer client.Close()
 		for {
 			select {
 			case <-time.After(cnf.interval):

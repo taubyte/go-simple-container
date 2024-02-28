@@ -17,7 +17,7 @@ type MuxedReadCloser struct {
 
 // Client wraps the methods of the docker Client.
 type Client struct {
-	Docker *client.Client
+	*client.Client
 }
 
 // volume defines the source and target to be volumed in the docker container.

@@ -10,7 +10,7 @@ import (
 
 // Run starts the container and waits for the container to exit before returning the container logs.
 func (c *Container) Run(ctx context.Context) (*MuxedReadCloser, error) {
-	if err := c.image.client.Docker.ContainerStart(ctx, c.id, types.ContainerStartOptions{}); err != nil {
+	if err := c.image.client.ContainerStart(ctx, c.id, types.ContainerStartOptions{}); err != nil {
 		return nil, errorContainerStart(c.id, c.image.image, err)
 	}
 
@@ -18,7 +18,7 @@ func (c *Container) Run(ctx context.Context) (*MuxedReadCloser, error) {
 		return nil, err
 	}
 
-	info, err := c.image.client.Docker.ContainerInspect(ctx, c.id)
+	info, err := c.image.client.ContainerInspect(ctx, c.id)
 	if err != nil {
 		return nil, errorContainerInspect(c.id, c.image.image, err)
 	}
@@ -28,7 +28,7 @@ func (c *Container) Run(ctx context.Context) (*MuxedReadCloser, error) {
 		RetCodeErr = errorContainerExitCode(c.id, c.image.image, info.ContainerJSONBase.State.ExitCode)
 	}
 
-	muxed, err := c.image.client.Docker.ContainerLogs(ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+	muxed, err := c.image.client.ContainerLogs(ctx, c.id, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		return nil, errorContainerLogs(c.id, c.image.image, err)
 	}
@@ -41,7 +41,7 @@ func (c *Container) Run(ctx context.Context) (*MuxedReadCloser, error) {
 // Wait calls the ContainerWait method for the container, and returns once a response has been received.
 // If there is an error response then wait will return the error
 func (c *Container) Wait(ctx context.Context) error {
-	statusCh, errCh := c.image.client.Docker.ContainerWait(ctx, c.id, container.WaitConditionNotRunning)
+	statusCh, errCh := c.image.client.ContainerWait(ctx, c.id, container.WaitConditionNotRunning)
 	select {
 	case err := <-errCh:
 		if err != nil {
@@ -54,7 +54,7 @@ func (c *Container) Wait(ctx context.Context) error {
 
 // Cleanup removes the container from the docker host client.
 func (c *Container) Cleanup(ctx context.Context) error {
-	if err := c.image.client.Docker.ContainerRemove(ctx, c.id, types.ContainerRemoveOptions{}); err != nil {
+	if err := c.image.client.ContainerRemove(ctx, c.id, types.ContainerRemoveOptions{}); err != nil {
 		return fmt.Errorf("removing container with id `%s` failed with: %s", c.id, err)
 	}
 	return nil
